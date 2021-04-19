@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: Serverless application for movie review sentiment analysis.
+Resources:
+  InferenceFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      CodeUri: "./src/"
+      Description: "Serverless function for movie review sentiment analysis."
+      MemorySize: 128
+      Timeout: 60
+      Policies:
+        # To be able to write logs to CloudWatch
+        - AWSLambdaBasicExecutionRole
+      Layers:
+        - Ref: SpacyLayer
+        - Ref: ModelLayer
+      Events:
+        InferenceEndpoint:
+          Type: HttpApi
+          Properties:
+            Path: "/predict"
+            Method: GET
+  SpacyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.8
+      ContentUri: "./layers/spacy-layer.zip"
+  ModelLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.8
+      ContentUri: "./model_artifacts.zip"
+
+Outputs:
+  APIEndpoint:
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/predict"

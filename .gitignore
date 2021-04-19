@@ -1,0 +1,7 @@
+.vscode/
+.venv/
+model_artifacts/
+.python-version
+python/
+*.zip
+samconfig.toml
